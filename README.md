@@ -7,7 +7,7 @@ Compiled version for Windows 0.8.2 (https://carla.readthedocs.io/en/stable/getti
 Download modified manual_control.py script in order to detect CARLA traffic speed signs.
 
 ###### Dataset
-30.730 CARLA images (2.384 labelled and 28.346 unlabelled) mixing different sessions in different scenarios and weather conditions. 
+30.730 CARLA images (2.346 labelled and 28.384 unlabelled) mixing different sessions in different scenarios and weather conditions. 
 
 Download at dataset_CARLA.zip
 
