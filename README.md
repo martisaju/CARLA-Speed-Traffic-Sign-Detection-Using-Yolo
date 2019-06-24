@@ -2,7 +2,7 @@
 Final Master Thesis on how to detect CARLA Simulator's Traffic Speed Sign using YOLO v3 Neural Network for object detection
 
 ###### CARLA
-Compiled version for Windows 0.8.2 (https://carla.readthedocs.io/en/stable/getting_started/)
+Compiled version (0.8.2) for Windows (https://carla.readthedocs.io/en/stable/getting_started/)
 
 Download modified manual_control.py script in order to detect CARLA traffic speed signs.
 
