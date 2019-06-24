@@ -18,5 +18,4 @@ Download weights at yolov3-tiny-obj_X.weights.
 
 Download yolov3-tiny configured network at yolov3-tiny-obj.cfg.
 
-Find YOLO installation and configuration procedures at https://github.com/pjreddie/darknet. 
 More details: http://pjreddie.com/darknet/yolo/.
