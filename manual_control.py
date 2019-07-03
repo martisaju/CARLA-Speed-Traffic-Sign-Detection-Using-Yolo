@@ -38,6 +38,7 @@ import subprocess
 import numpy as np
 import threading
 import multiprocessing
+from datetime import datetime
 
 
 
@@ -71,6 +72,7 @@ from carla.settings import CarlaSettings
 from carla.tcp import TCPConnectionError
 from carla.util import print_over_same_line
 from PIL import Image
+from pexpect import popen_spawn
 import io
 
 
@@ -81,7 +83,19 @@ MINI_WINDOW_HEIGHT = 180
 detected_speed = ''
 flg_warning = 0
 current_speed = ''
-iteration = 0
+frame = 0
+
+def darknet(message):
+    os.chdir("C:/Users/NAME/Desktop/darknet-master/build/darknet/x64")
+    process = popen_spawn.PopenSpawn('darknet.exe detector test data/obj.data \
+                                    yolov3-tiny-obj.cfg yolov3-tiny-obj_X.weights \
+                                    -dont_show -ext_output -save_labels') #Running Darknet
+    print(message)
+    return process
+message = 'Darknet Started'
+darknet_process = darknet(message)
+
+
 
 def make_carla_settings(args):
     """Make a CarlaSettings object with the settings we need."""
@@ -123,7 +137,7 @@ class Timer(object):
 
 
 class CarlaGame(object):
-    def __init__(self, carla_client, args):
+    def __init__(self, carla_client, args): 
         self.client = carla_client
         self._carla_settings = make_carla_settings(args)
         self._timer = None
@@ -145,7 +159,7 @@ class CarlaGame(object):
 
     def execute(self, args):
         """Launch the PyGame."""
-        global iteration
+        global frame
         pygame.init()
         self._initialize_game() 
         try:
@@ -153,11 +167,9 @@ class CarlaGame(object):
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return
-                iteration = iteration +1
+                frame = frame +1
                 self._on_loop(args)
-                start_time = time.time()
                 self._on_render(args)
-                print('Iteration Time: ', (time.time() - start_time))
         finally:
             pygame.quit()
 
@@ -194,13 +206,7 @@ class CarlaGame(object):
         
         # Print measurements every second.        
         if self._timer.elapsed_seconds_since_lap() > 1.0: 
-            '''
-            for agent in measurements.non_player_agents:
-                if agent.HasField('speed_limit_sign'):
-                    print(agent.id)
-                    #print(agent.speed_limit_sign.transform)
-                    print(agent.speed_limit_sign.speed_limit)
-            '''
+
             if self._city_name is not None:
                 # Function to get car position on map.
                 map_position = self._map.convert_to_pixel([
@@ -329,21 +335,18 @@ class CarlaGame(object):
                         flg_warning = 1
 
     def _traffic_sign_recogniser(self, new, detected_speed_loop):
-
-        carla_scene_exists = os.path.isfile("Y:/Temp/carla_scene.jpg") #CHANGE TO YOUR DISK PATH
+        global darknet_process
+        carla_scene_exists = os.path.isfile("Y:/Temp/carla_scene.jpg")
         if carla_scene_exists:
-            carla_scene = ("Y:/Temp/carla_scene.jpg")
-            os.chdir("") #PUT HERE YOUR DARKNET PATH
-            p = subprocess.Popen('darknet_no_gpu.exe detector test data/obj.data yolov3-tiny-obj.cfg yolov3-tiny-obj_X.weights \
-                -dont_show '+carla_scene+' -ext_output -save_labels', stdout=subprocess.PIPE, stderr=subprocess.STDOUT) #Running Darknet
-            stdout, stderr = p.communicate()
-            p.terminate()
+            carla_scene = (b"Y:/Temp/carla_scene.jpg")
+            darknet_process.send(carla_scene+b'\n')
 
             labels_file_exists = os.path.isfile("Y:/Temp/carla_scene.txt")
             if labels_file_exists:
                 labels_file = open("Y:/Temp/carla_scene.txt","r")
                 predicted_labels = labels_file.read()
-                if os.stat("Y:/Temp/carla_scene.txt").st_size != 0: #Check if any traffic-speed-sign has been detected
+                if os.stat("Y:/Temp/carla_scene.txt").st_size != 0: 
+                    #Check if any speed traffic sign has been detected
                     sign_tsr = predicted_labels[0]
                     if int(sign_tsr) == 0:
                         detected_speed_loop = '30'
@@ -361,7 +364,7 @@ class CarlaGame(object):
         global detected_speed
         global flg_warning
         global current_speed
-        global iteration
+        global frame
 
         self._timer.tick()
         gap_x = (WINDOW_WIDTH - 2 * MINI_WINDOW_WIDTH) / 3
@@ -373,12 +376,11 @@ class CarlaGame(object):
 
             if args.app:               
                 new = False
-                draw = False
                 detected_speed_loop = ''
-
-                if (iteration % 20 ==0): #MESURES CADA SEGON
+               
+                if (frame % 5 ==0):  
                     a = Image.fromarray(array, 'RGB')
-                    a.save('Y:/Temp/carla_scene.jpg')
+                    a.save('Y:/Temp/carla_scene.jpg')     
                     detected_speed_loop, new = self._traffic_sign_recogniser(new, detected_speed_loop)
    
                 if new:
@@ -398,37 +400,35 @@ class CarlaGame(object):
                     b = 255
                 
                 basicfont = pygame.font.SysFont(None, 80)
-                text = basicfont.render(detected_speed, True, (0,0,255))
-                textrec = text.get_rect()
+                text_detected = basicfont.render(detected_speed, True, (0,0,255))
+                textrec = text_detected.get_rect()
                 textrec.top = surface.get_rect().top
                 textrec.midtop = surface.get_rect().midtop
-                surface.blit(text, textrec)
+                surface.blit(text_detected, textrec)
                 
-                text = basicfont.render(current_speed+'km/h', True, (r,g,b))
-                textrec = text.get_rect()
+                text_current = basicfont.render(current_speed+'km/h', True, (r,g,b))
+                textrec = text_current.get_rect()
                 textrec.top = surface.get_rect().top
                 textrec.bottomright = surface.get_rect().bottomright
-                surface.blit(text, textrec)
+                surface.blit(text_current, textrec)
                 
                 if args.app == 'Warning':
                     if flg_warning==-1:
                         basicfont = pygame.font.SysFont(None, 60)
-                        text = basicfont.render('REDUCE YOUR SPEED', True, (r,g,b))
-                        textrec = text.get_rect()
+                        text_warning = basicfont.render('REDUCE YOUR SPEED', True, (r,g,b))
+                        textrec = text_warning.get_rect()
                         textrec.top = surface.get_rect().top
                         textrec.bottomleft = surface.get_rect().bottomleft
-                        surface.blit(text, textrec)
+                        surface.blit(text_warning, textrec)
                
                 if args.app == 'Control':
                     if flg_warning==-1:
                         basicfont = pygame.font.SysFont(None, 60)
-                        text = basicfont.render('SPEED REDUCED', True, (r,g,b))
-                        textrec = text.get_rect()
+                        text_control = basicfont.render('SPEED REDUCED', True, (r,g,b))
+                        textrec = text_control.get_rect()
                         textrec.top = surface.get_rect().top
                         textrec.bottomleft = surface.get_rect().bottomleft
-                        surface.blit(text, textrec)
-
-        #####################################################################
+                        surface.blit(text_control, textrec)
 
             self._display.blit(surface, (0, 0))
         pygame.display.flip()
