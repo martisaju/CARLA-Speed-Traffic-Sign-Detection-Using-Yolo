@@ -14,8 +14,8 @@ Download at https://drive.google.com/drive/folders/17x4_53WLIbxRN_6y2oBJ_ODnGYF8
 ###### Network
 YOLOv3-tiny version pretrained to detect CARLA speed traffic signs.
 
-Download weights at yolov3-tiny-obj_5000.weights file.
+Download the generated weights at yolov3-tiny-obj_5000.weights file.
 
-Download yolov3-tiny configured network at yolov3-tiny-obj.cfg file.
+Download the yolov3-tiny configured network at yolov3-tiny-obj.cfg file.
 
 More details: http://pjreddie.com/darknet/yolo/.
