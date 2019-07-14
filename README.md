@@ -1,6 +1,9 @@
 # CARLA-Speed-Traffic-Sign-Detection-Using-Yolo
 Final Master Thesis on how to detect CARLA Simulator's Speed Traffic Sign using YOLO v3 Neural Network for object detection
 
+###### Thesis
+Attached PDF: "Speed Traffic Sign Detection on the CARLA simulator using YOLO"
+
 ###### CARLA
 Compiled version (0.8.2) for Windows (https://carla.readthedocs.io/en/stable/getting_started/)
 
